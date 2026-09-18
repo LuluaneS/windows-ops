@@ -1,0 +1,7 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 Luluane (LuluaneS; Windows Ops by Luluane & Astrean (Starflame);
+# https://github.com/LuluaneS/windows-ops). See LICENSE-CODE.
+interface:
+  display_name: "Windows Ops"
+  short_description: "Repair Windows shell, launcher, and encoding failures"
+  default_prompt: "Use $windows-ops to diagnose this Windows runtime, launcher, service, or encoding issue and verify any authorized repair in the affected process context."
