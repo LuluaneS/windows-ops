@@ -13,7 +13,8 @@ third-party runtime.
 
 - Python environment ownership, dependency changes, and service relocation.
 - The difference between a staged runtime change and a live, verified consumer.
-- PowerShell identity, automatic-variable collisions, and file-inventory comparisons.
+- PowerShell identity, native arguments and exit codes, automatic-variable collisions, and file-inventory comparisons.
+- Configuration round-trips that preserve JSON values and array shapes, plus CSV and batch rename/move checks.
 - Hidden child processes, shortcuts, single-instance services, and independent lifetime.
 - UTF-8 files, native pipes, `pythonw`, and uncertain delivery after an output error.
 - A conditional Codex skill-validator check after updates.
@@ -57,7 +58,16 @@ Verification is scoped: running in a terminal does not prove a scheduled task
 works, and a healthy hidden service does not prove it survives its launcher.
 Environment-specific observations must be checked on the affected machine.
 
-## September 2026 update
+## October 2026 update
+
+The entry point now follows a simple sequence: establish the execution context,
+select the relevant reference, and verify in the affected environment. New
+guidance covers native-command argument boundaries and exit codes, JSON
+round-trip fidelity, and destination conflicts in batch file operations.
+PowerShell 5.1 and 7 remain supported according to each task's actual needs;
+no new helper scripts or runtime dependencies are required.
+
+### September 2026 update
 
 The public edition now uses focused reference cards and includes service-owned
 Python environments, rebuilding virtual environments after relocation,

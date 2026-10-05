@@ -1,6 +1,6 @@
 ---
 name: windows-ops
-description: Prevent and repair Windows runtime, launcher, service, shell, and text-encoding failures. Use when non-ASCII paths, Python runtimes, process ownership, or startup context can change an operation or failure, including dependency and post-update validator changes. Not for platform-neutral work.
+description: Prevent and repair Windows runtime, launcher, service, shell, and text-encoding failures. Use for PowerShell native arguments, exit codes, configuration round-trips or file batches, and when non-ASCII paths, Python runtimes, process ownership or startup context matters, including dependency and post-update validator changes. Not for platform-neutral work.
 license: "CC-BY-4.0 (prose); MIT (code and configuration). See LICENSING.md."
 ---
 
@@ -10,37 +10,42 @@ Public Windows operations guidance by Luluane & Astrean (Starflame).
 Source: https://github.com/LuluaneS/windows-ops
 License and reuse: [LICENSING.md](LICENSING.md).
 
-## Proactive Windows Gate
+## Before the first command
 
-Load this skill before the first command when a Windows-hosted action will read or write Chinese, emoji, or non-ASCII paths; pass non-ASCII through Python or PowerShell stdin/stdout; rely on implicit text-file encoding; or depend on an exact shell, executable, process host, user session, service, scheduler, or hidden-child context.
+Load this skill when a Windows action handles Chinese, emoji or non-ASCII paths;
+passes non-ASCII through Python or PowerShell stdin/stdout; relies on implicit
+file encoding; or depends on the shell, executable, process host, user session,
+service, scheduler or hidden-child context.
 
-For a maintained tool whose contract already requires known UTF-8 input, fix the owning read/write call with explicit UTF-8 and verify the ordinary invocation. Use `python -X utf8` only for a genuinely one-off UTF-8-only tool or bounded diagnosis; do not let it mask a regression in maintained code.
+Verify the executable in the target context. Command resolution alone is not
+execution proof: WindowsApps aliases may open the Store or fail in another
+session. For launchers, services, scheduled tasks and MCP config, use a verified
+real executable path and launch that exact path once.
 
-## Conditional cards
+For maintained tools with a UTF-8 contract, fix the owning read/write call and
+verify the ordinary invocation. Reserve `python -X utf8` for one-off UTF-8-only
+tools or bounded diagnosis, rather than masking a maintained-code regression.
 
-Read only the matching card before that action; these are parts of this skill, not new owners.
+Use the user's existing authorization for repairs. This guide does not grant
+permission to install software, stop processes, restart services or change
+startup configuration. Complete useful read-only diagnosis before requesting
+any missing authorization.
 
-- After a Codex update/reinstall, at the next relevant skill validation: [validator canary](references/validator-canary.md).
+## Read the relevant card
 
-Use the user's existing authorization for repairs. Reading this skill does not
-authorize installation, process termination, service restarts, or persistent
-startup changes. Complete useful read-only diagnosis before requesting any
-missing authorization.
+Choose by the task or symptom; read only the matching card before acting.
 
-## Runtime
+| Task or symptom | Card |
+|---|---|
+| Shell identity, native arguments/exit codes, parameter binding, reserved variables, cross-runtime inventory comparisons | [PowerShell semantics](references/powershell-semantics.md) |
+| Encoding-sensitive edits, stdin/stdout or uncertain Unicode delivery | [Text encoding](references/text-encoding.md) |
+| PowerShell configuration round-trips or bulk rename/move | [Configuration and file batches](references/config-and-file-batches.md) |
+| Launchers, shortcuts, hidden children, pythonw or persistence | [Launchers and process presentation](references/launchers.md) |
+| Python dependencies/runtimes, service activation, process ancestry or termination | [Runtime ownership and activation](references/runtime-ownership.md) |
+| First relevant validation after a Codex update/reinstall | [Validator canary](references/validator-canary.md) |
 
-Verify the exact executable path in the target process context. Do not assume `python`, `py`, `pythonw`, `pwsh`, or `powershell` works because another terminal or user session worked.
+## Verify in the target context
 
-Treat command resolution as discovery, not execution proof. WindowsApps aliases and placeholders can open Microsoft Store, resolve differently for a service account, or fail silently. For launchers, services, scheduled tasks, and MCP config, prefer a verified real executable path and launch that exact path once.
-
-- Before Python dependency/runtime changes, service activation, process ancestry or termination: [runtime ownership and activation](references/runtime-ownership.md). It owns per-consumer STAGED/LIVE/UNVERIFIED and process incarnation checks.
-
-- When shell identity, parameter binding, reserved variables or cross-runtime inventory comparison matters: [PowerShell semantics](references/powershell-semantics.md). Use role-specific variables; casing does not avoid automatic-variable collisions.
-
-- Before launchers, shortcuts, hidden children, pythonw or persistence work: [launchers and process presentation](references/launchers.md). Hidden windows do not prove independent lifetime; Startup holds launchers only.
-
-- Before encoding-sensitive edits, stdin/stdout handling or uncertain Unicode delivery: [text encoding](references/text-encoding.md). Preserve identified encoding/newlines; prefer small patches and UTF-8 file-backed non-ASCII payloads. Output failure does not prove an earlier external operation failed.
-
-## Verify
-
-Separate "file exists", "runs in Codex sandbox", "runs in normal PowerShell", and "runs as service/scheduled task with its own account and working directory".
+Distinguish file existence, execution in the Codex sandbox, execution in normal
+PowerShell, and execution through the actual service or scheduled task with its
+own account and working directory. Success in one context does not prove another.

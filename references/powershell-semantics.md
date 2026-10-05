@@ -16,6 +16,15 @@ $OutputEncoding
 - A running Codex or terminal process does not inherit a PATH update retroactively. After an install or PATH change, restart the relevant app and verify from a fresh process which executable it actually launched.
 - Do not infer Codex's shell from `Get-Command pwsh` alone. Read back the current shell process path and version, then run a small native-pipe UTF-8 probe when encoding is part of the goal.
 
+### Native Arguments And Exit Codes
+
+- Invoke a resolved executable with separate arguments (`& $exe @commandArguments`). This avoids evaluating data as PowerShell code; the target still interprets its own options. Use its end-of-options marker only when supported.
+- PowerShell 7.3+ improves empty-string and embedded-quote delivery, but Windows mode still uses legacy handling for batch files and selected executables. For fragile JSON or multiline payloads, use the program's file/stdin interface; verify received arguments when exact delivery matters. Do not globally change argument-passing preferences to fix one command.
+- `Start-Process -ArgumentList` joins an array into a command-line string; it is not an argv-preserving alternative. Across another shell, prefer a script file with `-File` over nested command strings. Existing Unicode guidance remains in [text encoding](text-encoding.md).
+- For cmdlets, use `-ErrorAction Stop` when failure must interrupt work. For native programs, capture `$LASTEXITCODE` immediately and interpret that program's contract; stderr or nonzero alone is not enough. If `$PSNativeCommandUseErrorActionPreference` is enabled, scope its suppression to the block that explicitly checks the native result. Preserve unexpected failures in the final task result.
+
+Sources: [Microsoft parsing](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_parsing), [Start-Process](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.management/start-process), [preference variables](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_preference_variables).
+
 ### PowerShell Automatic-Variable Collisions
 
 PowerShell variable names are case-insensitive. Automatic variables can therefore collide with natural parameter or local names even when casing differs. On the current PowerShell route, the easiest names to borrow accidentally are `$PID` (`Constant`), `$HOME` (`ReadOnly`), `$Error` (`Constant`), and `$Host` (`Constant`). Verify the target shell with `Get-Variable` when the exact reserved set matters.
